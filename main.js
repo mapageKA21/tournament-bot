@@ -23,7 +23,6 @@ You can control me by sending these commands:
 	
   `;
   bot.sendMessage(chatId, resp, {parse_mode: 'Markdown'});
-  console.log(chatId);
 });
 
 bot.onText(/\/help/, function (msg, match) {
@@ -42,18 +41,25 @@ Then type /newtournament to start a tournament!
 	
   `;
   bot.sendMessage(chatId, resp, {parse_mode: 'Markdown'});
-  console.log(chatId);
 });
 
 // I have to implement newtournament
 bot.onText(/\/newtournament/, function (msg, match) {
   let chatId = msg.chat.id;
   let resp = `
-  
   This is the tournament tree. Next match is: 
-	
   `;
-  bot.sendMessage(chatId, resp, {parse_mode: 'Markdown'});
+
+  // check the number of players
+  bot.getChatMembersCount(chatId).then(function(data) {
+    if (data < 5) {
+      bot.sendMessage(chatId, 'You need at least 4 players to start a tournament!');
+    } else {
+      bot.sendMessage(chatId, resp);
+    }
+  }).catch(function() {
+    console.log('error');
+  })
 });
 
 // I have to implement deletetournament
@@ -69,11 +75,11 @@ bot.onText(/\/deletetournament/, function (msg, match) {
   // }).catch(function() {
   //   console.log('error');
   // })
-  bot.getChatAdministrators(-176205989).then(function(data) {
-    console.log(data);
-  }).catch(function() {
-    console.log('error');
-  })
+  // bot.getChatAdministrators(-176205989).then(function(data) {
+  //   console.log(data);
+  // }).catch(function() {
+  //   console.log('error');
+  // })
 
   bot.getChatMembersCount(-176205989).then(function(data) {
     console.log(data);
@@ -81,42 +87,13 @@ bot.onText(/\/deletetournament/, function (msg, match) {
     console.log('error');
   })
 
-  bot.sendMessage(chatId, resp, {parse_mode: 'Markdown'});
+  bot.sendMessage(chatId, data);
 });
 
-// Matches /echo [whatever]
-// bot.onText(/\/echo (.+)/, function (msg, match) {
-//   let fromId = msg.from.id;
-//   let resp = match[1];
-// 	let opts = {
-//     reply_markup: JSON.stringify({ 
-//     keyboard: [['OK','Cancel']],
-//     one_time_keyboard: true,
-//     resize_keyboard: true
-//     })
-//   };
-//   bot.sendMessage(fromId, resp, opts);
-// });
 
-//Any kind of message
-// bot.on('message', function (msg) {
-//   let chatId = msg.chat.id;
-//   photo can be: a file path, a stream or a Telegram file_id
-//   let photo = './cats.jpg';
-//   bot.sendPhoto(chatId, photo, {caption: 'Lovely kittens'});
-//   let opts = {
-//     reply_markup: JSON.stringify({ 
-//     keyboard: [['OK','Cancel']],
-//     one_time_keyboard: true,
-//     resize_keyboard: true
-//     })
-//   };
-//   bot.sendMessage(chatId, 'What do you want to do?', opts);
-// });
 
 bot.on('message', function (msg) {
   let chatId = msg.chat.id;
-  console.log(msg);
   if (msg.new_chat_participant) console.log(msg.new_chat_participant.first_name + ' ' + msg.new_chat_participant.last_name );
   if (msg.left_chat_participant) console.log(msg.left_chat_participant.username);
 
@@ -145,3 +122,33 @@ bot.on('message', function (msg) {
 //      first_name: 'Javier',
 //      last_name: 'Cabrera',
 //      username: 'jcc2303' } }
+
+// Matches /echo [whatever]
+// bot.onText(/\/echo (.+)/, function (msg, match) {
+//   let fromId = msg.from.id;
+//   let resp = match[1];
+//  let opts = {
+//     reply_markup: JSON.stringify({ 
+//     keyboard: [['OK','Cancel']],
+//     one_time_keyboard: true,
+//     resize_keyboard: true
+//     })
+//   };
+//   bot.sendMessage(fromId, resp, opts);
+// });
+
+//Any kind of message
+// bot.on('message', function (msg) {
+//   let chatId = msg.chat.id;
+//   photo can be: a file path, a stream or a Telegram file_id
+//   let photo = './cats.jpg';
+//   bot.sendPhoto(chatId, photo, {caption: 'Lovely kittens'});
+//   let opts = {
+//     reply_markup: JSON.stringify({ 
+//     keyboard: [['OK','Cancel']],
+//     one_time_keyboard: true,
+//     resize_keyboard: true
+//     })
+//   };
+//   bot.sendMessage(chatId, 'What do you want to do?', opts);
+// });
