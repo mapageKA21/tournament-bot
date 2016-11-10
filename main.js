@@ -3,13 +3,12 @@
 //username: DChamp_Bot
 
 const TelegramBot = require('node-telegram-bot-api');
-
-const token = '295609320:AAGyykQeyVxdxKYIxgXUlt_ZfMZUVJzaGr8';
+const token = require('./token.js');
 
 // Setup polling way
 const bot = new TelegramBot(token, {polling: true});
 
-// Matches /start comand
+// Matches /start command
 bot.onText(/\/start/, function (msg, match) {
   let chatId = msg.chat.id;
   let resp = `
@@ -75,11 +74,13 @@ bot.onText(/\/deletetournament/, function (msg, match) {
   }).catch(function() {
     console.log('error');
   })
+
   bot.getChatMembersCount(-176205989).then(function(data) {
     console.log(data);
   }).catch(function() {
     console.log('error');
   })
+
   bot.sendMessage(chatId, resp, {parse_mode: 'Markdown'});
 });
 
@@ -100,7 +101,7 @@ bot.onText(/\/deletetournament/, function (msg, match) {
 //Any kind of message
 // bot.on('message', function (msg) {
 //   let chatId = msg.chat.id;
-//   // photo can be: a file path, a stream or a Telegram file_id
+//   photo can be: a file path, a stream or a Telegram file_id
 //   let photo = './cats.jpg';
 //   bot.sendPhoto(chatId, photo, {caption: 'Lovely kittens'});
 //   let opts = {
@@ -112,3 +113,35 @@ bot.onText(/\/deletetournament/, function (msg, match) {
 //   };
 //   bot.sendMessage(chatId, 'What do you want to do?', opts);
 // });
+
+bot.on('message', function (msg) {
+  let chatId = msg.chat.id;
+  console.log(msg);
+  if (msg.new_chat_participant) console.log(msg.new_chat_participant.first_name + ' ' + msg.new_chat_participant.last_name );
+  if (msg.left_chat_participant) console.log(msg.left_chat_participant.username);
+
+  // bot.sendMessage(chatId, 'What do you want to do?', opts);
+});
+
+// { message_id: 145,
+//   from: 
+//    { id: 207286404,
+//      first_name: 'Manel',
+//      last_name: 'Pavon',
+//      username: 'Manel_Pavon' },
+//   chat: 
+//    { id: -176205989,
+//      title: 'Pruebas',
+//      type: 'group',
+//      all_members_are_administrators: true },
+//   date: 1478733428,
+//   new_chat_participant: 
+//    { id: 277229521,
+//      first_name: 'Javier',
+//      last_name: 'Cabrera',
+//      username: 'jcc2303' },
+//   new_chat_member: 
+//    { id: 277229521,
+//      first_name: 'Javier',
+//      last_name: 'Cabrera',
+//      username: 'jcc2303' } }
