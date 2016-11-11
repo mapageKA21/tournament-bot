@@ -4,6 +4,7 @@
 
 const TelegramBot = require('node-telegram-bot-api');
 const token = require('./token.js');
+const tournament = require(./tournament.js);
 
 // Setup polling way
 const bot = new TelegramBot(token, {polling: true});

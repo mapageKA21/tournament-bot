@@ -1,8 +1,6 @@
-// funciona ok par + impar + edge cases
-
 'use strict';
 
-let players = ['1', '2', '3', '4', '5', '6', '7'];
+let players = ['1', '2', '3', '4', '5', '6', '7', '8'];
 
 function Match () {
  this.value = undefined;
@@ -12,6 +10,43 @@ function Match () {
  this.played = false;
  this.childrenLeft = undefined;
  this.childrenRight = undefined;
+}
+Match.prototype.passRound = function (winner) {
+  if (this.childrenLeft === undefined) return false;
+  if (this.childrenLeft.player1 === winner) {
+    this.player1 = winner;
+    this.childrenLeft.played = true;
+    return true;
+  } else if (this.childrenLeft.player2 === winner ) {
+    this.player1 = winner;
+    this.childrenLeft.played = true;  
+    return true;
+  }
+  if (this.childrenRight !== undefined) {
+    if (this.childrenRight.player1 === winner) {
+      this.player2 = winner;
+      this.childrenLeft.played = true;
+      return true;
+    } else if (this.childrenRight.player2 === winner) {
+      this.player2 = winner;
+      this.childrenLeft.played = true;
+      return true;
+    }
+  }
+  
+  var found = this.childrenLeft.passRound(winner);
+  if (!found && this.childrenRight) 
+    found = this.childrenRight.passRound(winner);
+
+  return found;
+}
+
+Match.prototype.nextMatch = function () {
+  
+  if (this.player1 && this.player2) return this;
+  if (!this.player2 && this.childrenRight !== undefined) return this.childrenRight.nextMatch();
+  if (!this.player1 && this.childrenLeft !== undefined) return this.childrenLeft.nextMatch();
+  // if (this.childrenLeft !== undefined) this.childrenLeft.nextMatch();
 }
 
 // per fer value = semifinals o qurterfinals etc podria comprovar el counter (<7 semifinals, <15 quarterfinals, etc)
@@ -61,6 +96,21 @@ function createTournament (playersArray) {
       match.childrenRight.player2 = players.shift();
     }
   }
+  return final;
 }
 
-createTournament(players);
+// var newTournament = createTournament(players);
+// newTournament.passRound('8');
+// newTournament.passRound('6');
+// newTournament.passRound('6');
+// newTournament.passRound('4');
+// newTournament.passRound('2');
+// newTournament.passRound('2');
+
+
+
+// // newTournament.passRound('7');
+// // console.log(newTournament);
+// console.log(newTournament.nextMatch());
+
+
