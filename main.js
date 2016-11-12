@@ -15,7 +15,7 @@ let myState = {
 }
 
 let chatAdmin;
-let players = ['1','2','3','4','5','6','7'];
+let players = ['1','2','3'];
 let newT;
 // let newT = tournament.createTournament(players);
 // newT.passRound('6');
@@ -32,7 +32,6 @@ bot.on('message', function (msg) {
     })
   }
 });
-
 
 // Matches /start command
 bot.onText(/\/start/, function (msg, match) {
@@ -60,7 +59,7 @@ When ready, the administrator has to type /go to start the tournament.
         bot.sendMessage(chatId, `Can't play more than one tournament at once`);
       }
     } else {
-      bot.sendMessage(chatId, `Only ${admin} can send me commands!`);
+      bot.sendMessage(chatId, `Only ${chatAdmin} can send me commands!`);
     }
 });
 
@@ -110,37 +109,51 @@ bot.onText(/\/register/, function (msg, match) {
 
 bot.onText(/\/go/, function (msg, match) {
   let chatId = msg.chat.id;
-  bot.getChatAdministrators(chatId).then(function(data) {
-    let admin = data[0].user.username;
-    if (msg.from.username === admin) {
-      if (players.length > 3) {
-        // generate tournament
-        // send next match
-        myState.registring = false;
-        myState.playing = true;
-        newT = tournament.createTournament(players);
-        let nextM = newT.nextMatch()
-        console.log(nextM.player1);
-        bot.sendMessage(chatId, JSON.stringify(newT));
-        bot.sendMessage(chatId, `Next Match: ${nextM.player1} VS ${nextM.player2}`);
-        let opts = {
-          reply_markup: JSON.stringify({ 
-          keyboard: [[`${nextM.player1}`, `${nextM.player2}`]],
-          one_time_keyboard: true,
-          resize_keyboard: true
-          })
-        };
-        bot.sendMessage(chatId, `Who won the match? Choose the winner by clicking the button below.`, opts);
-      } else {
-        bot.sendMessage(chatId, `You need at least 4 players to start a tournament and you are only ${players.length}!`);
-      }
-    } else {
-      bot.sendMessage(chatId, `Only ${admin} can send me commands!`);
+
+  if (msg.from.username === chatAdmin) {
+  
+  // check number of players to start
+  if (players.length < 4) {
+    bot.sendMessage(chatId, `You need at least 4 players to start a tournament and you are only ${players.length}!`);
+  } else {
+    //set states, create and show the tournament
+      myState.registring = false;
+      myState.playing = true;
+      newT = tournament.createTournament(players);
+      bot.sendMessage(chatId, JSON.stringify(newT));
+
+      // shows next match and ask for the winner
+      let nextM = newT.nextMatch();
+      bot.sendMessage(chatId, `Next Match: ${nextM.player1} VS ${nextM.player2}`);
+      let opts = {
+        reply_markup: JSON.stringify({ 
+        keyboard: [[`${nextM.player1}`, `${nextM.player2}`]],
+        one_time_keyboard: true,
+        resize_keyboard: true
+        })
+      };
+      bot.sendMessage(chatId, `Who won the match? Choose the winner by clicking the button below.`, opts);
+      bot.on('message', function (msg) {
+        if (msg.from.username === chatAdmin) {
+          let chatId = msg.chat.id;
+          console.log(msg.text);
+          let winner = msg.text;
+          // winner goes to next round
+          newT.passRound(winner);
+        // bot.getChatAdministrators(chatId).then(function(data) {
+        // chatAdmin = data[0].user.username;
+        // console.log(chatAdmin);
+        // var something = /regular/
+        }
+      })     
     }
-  }).catch(function(err) {
-    console.log(err);
-  })
+  } else {
+      bot.sendMessage(chatId, `Only ${chatAdmin} can send me commands!`);  
+  }
 });
+    //bot.onText(/${nextM.player1}/, function (msg, match))
+  
+
 
 // bot.onText('message', function (msg, match) {
 //   let chatId = msg.chat.id;
@@ -188,7 +201,7 @@ bot.onText(/\/deletetournament/, function (msg, match) {
       bot.sendMessage(chatId, `You are not playing any tournament!`);
     }
   } else {
-    bot.sendMessage(chatId, `Only ${admin} can send me commands!`);
+    bot.sendMessage(chatId, `Only ${chatAdmin} can send me commands!`);
   }
 });
 
