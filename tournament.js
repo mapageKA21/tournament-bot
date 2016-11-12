@@ -55,7 +55,7 @@ tm.createTournament = function (players) {
   let queue = [final];
   let empty = players.length - 2;
   let counter = 2;
-  let match
+  let match;
   while (queue.length > 0 && counter < empty) {
     match = queue.shift();
     counter += 2;

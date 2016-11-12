@@ -13,44 +13,69 @@ let myState = {
   registring: false,
   playing: false
 }
-let playingPlayers = []
 
 let chatAdmin;
-let players = [];
-let newT;
 let chatId;
-// let newT = tournament.createTournament(players);
-// newT.passRound('6');
-// console.log(newT.nextMatch());
+let newT;
+let players;
+let playingPlayers = [];
+let theFinalPlayers = [];
 
 bot.on('message', function (msg) {
   if (msg.group_chat_created) {
     chatId = msg.chat.id;
     bot.getChatAdministrators(chatId).then(function(data) {
       chatAdmin = data[0].user.username;
-      console.log(chatAdmin);
     }).catch(function() {
       console.log('error on getChatAdministrators');
     })
   }
   if (msg.from.username === chatAdmin) {
-    if(playingPlayers.includes(msg.text)) {
+
+    if (theFinalPlayers.includes(msg.text)) {
+      setTimeout (function () { 
+        bot.sendMessage(chatId, `Tournament ended. Congratulations to ${msg.text}!`);
+      }, 600); 
+      theFinalPlayers = [];
+    }
+
+    if (playingPlayers.includes(msg.text)) {
       let winner = msg.text;
       // winner goes to next round
       newT.passRound(winner);
-      console.log('actual playing:' + playingPlayers);
       let nextMatch = newT.nextMatch();
-      playingPlayers = [nextMatch.player1, nextMatch.player2];
-      console.log('next playing' + playingPlayers);
-      bot.sendMessage(chatId, `Next Match: ${nextMatch.player1} VS ${nextMatch.player2}`);
-      let opts = {
-        reply_markup: JSON.stringify({ 
-          keyboard: [playingPlayers],
-          one_time_keyboard: true,
-          resize_keyboard: true
-        })
-      };
-      bot.sendMessage(chatId, `Who won the match? Choose the winner by clicking the button below.`, opts);    
+      if (nextMatch.value === 'final') {
+        theFinalPlayers = [nextMatch.player1, nextMatch.player2];
+        bot.sendMessage(chatId, `FINAL MATCH: ${nextMatch.player1} VS ${nextMatch.player2}`);
+        let opts = {
+          reply_markup: JSON.stringify({ 
+            keyboard: [theFinalPlayers],
+            one_time_keyboard: true,
+            resize_keyboard: true
+          })
+        };
+        setTimeout (function () { 
+          bot.sendMessage(chatId, `Who is the CHAMPION? Choose the winner by clicking the button below.`, opts);
+        }, 600);
+        myState.registring = false;
+        myState.playing = false;
+        newT = undefined;
+        players = [];
+        playingPlayers = [];
+      } else {
+          playingPlayers = [nextMatch.player1, nextMatch.player2];
+          bot.sendMessage(chatId, `Next Match: ${nextMatch.player1} VS ${nextMatch.player2}`);
+          let opts = {
+            reply_markup: JSON.stringify({ 
+              keyboard: [playingPlayers],
+              one_time_keyboard: true,
+              resize_keyboard: true
+            })
+          };
+          setTimeout (function () { 
+            bot.sendMessage(chatId, `Who won the match? Choose the winner by clicking the button below.`, opts);    
+        }, 600);
+        }
     }
   }
 });
@@ -86,7 +111,6 @@ When ready, the administrator has to type /go to start the tournament.
 });
 
 bot.onText(/\/help/, function (msg, match) {
-  console.log(chatAdmin);
   let chatId = msg.chat.id;
   let resp = `
     To start a tournament you have to add me to a Telegram group.
@@ -140,8 +164,9 @@ bot.onText(/\/go/, function (msg, match) {
     //set states, create and show the tournament
       myState.registring = false;
       myState.playing = true;
+      let number = players.length;
       newT = tournament.createTournament(players);
-      bot.sendMessage(chatId, JSON.stringify(newT));
+      bot.sendMessage(chatId, `New tournament created with ${number} players! Start!`);
 
       // shows next match and ask for the winner
       // console.log(newT);
@@ -155,7 +180,9 @@ bot.onText(/\/go/, function (msg, match) {
           resize_keyboard: true
         })
       };
-      bot.sendMessage(chatId, `Who won the match? Choose the winner by clicking the button below.`, opts);    
+      setTimeout (function () { 
+        bot.sendMessage(chatId, `Who won the match? Choose the winner by clicking the button below.`, opts);    
+      }, 600);
     }
   } else {
       bot.sendMessage(chatId, `Only ${chatAdmin} can send me commands!`);  
@@ -180,6 +207,7 @@ bot.onText(/\/deletetournament/, function (msg, match) {
           myState.playing = false;
           newT = undefined;
           players = [];
+          playingPlayers = [];
           bot.sendMessage(chatId, `Current tournament deleted`);
         }
       })
