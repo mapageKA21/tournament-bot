@@ -55,8 +55,9 @@ tm.createTournament = function (players) {
   let queue = [final];
   let empty = players.length - 2;
   let counter = 2;
+  let match
   while (queue.length > 0 && counter < empty) {
-    let match = queue.shift();
+    match = queue.shift();
     counter += 2;
     match.childrenLeft = new Match ();
     queue.push(match.childrenLeft);
@@ -100,19 +101,3 @@ tm.createTournament = function (players) {
 
 
 module.exports = tm;
-
-// var newTournament = createTournament(players);
-// newTournament.passRound('8');
-// newTournament.passRound('6');
-// newTournament.passRound('6');
-// newTournament.passRound('4');
-// newTournament.passRound('2');
-// newTournament.passRound('2');
-
-
-
-// // newTournament.passRound('7');
-// // console.log(newTournament);
-// console.log(newTournament.nextMatch());
-
-

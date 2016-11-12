@@ -13,23 +13,45 @@ let myState = {
   registring: false,
   playing: false
 }
+let playingPlayers = []
 
 let chatAdmin;
-let players = ['1','2','3'];
+let players = [];
 let newT;
+let chatId;
 // let newT = tournament.createTournament(players);
 // newT.passRound('6');
 // console.log(newT.nextMatch());
 
 bot.on('message', function (msg) {
-  if (msg.group_chat_created === true) {
-    let chatId = msg.chat.id;
+  if (msg.group_chat_created) {
+    chatId = msg.chat.id;
     bot.getChatAdministrators(chatId).then(function(data) {
       chatAdmin = data[0].user.username;
       console.log(chatAdmin);
     }).catch(function() {
       console.log('error on getChatAdministrators');
     })
+  }
+  if (msg.from.username === chatAdmin) {
+    if(playingPlayers.includes(msg.text)) {
+      let winner = msg.text;
+      // winner goes to next round
+      newT.passRound(winner);
+      console.log('actual playing:' + playingPlayers);
+      let nextMatch = newT.nextMatch();
+      playingPlayers = [nextMatch.player1, nextMatch.player2];
+      console.log('next playing' + playingPlayers);
+      bot.sendMessage(chatId, `Next Match: ${nextMatch.player1} VS ${nextMatch.player2}`);
+      let opts = {
+        reply_markup: JSON.stringify({ 
+          keyboard: [playingPlayers],
+          one_time_keyboard: true,
+          resize_keyboard: true
+        })
+      };
+      bot.sendMessage(chatId, `Who won the match? Choose the winner by clicking the button below.`, opts);    
+    }
   }
 });
 
@@ -109,7 +131,6 @@ bot.onText(/\/register/, function (msg, match) {
 
 bot.onText(/\/go/, function (msg, match) {
   let chatId = msg.chat.id;
-
   if (msg.from.username === chatAdmin) {
   
   // check number of players to start
@@ -123,54 +144,24 @@ bot.onText(/\/go/, function (msg, match) {
       bot.sendMessage(chatId, JSON.stringify(newT));
 
       // shows next match and ask for the winner
+      // console.log(newT);
       let nextM = newT.nextMatch();
+      playingPlayers = [nextM.player1, nextM.player2];
       bot.sendMessage(chatId, `Next Match: ${nextM.player1} VS ${nextM.player2}`);
       let opts = {
         reply_markup: JSON.stringify({ 
-        keyboard: [[`${nextM.player1}`, `${nextM.player2}`]],
-        one_time_keyboard: true,
-        resize_keyboard: true
+          keyboard: [playingPlayers],
+          one_time_keyboard: true,
+          resize_keyboard: true
         })
       };
-      bot.sendMessage(chatId, `Who won the match? Choose the winner by clicking the button below.`, opts);
-      bot.on('message', function (msg) {
-        if (msg.from.username === chatAdmin) {
-          let chatId = msg.chat.id;
-          console.log(msg.text);
-          let winner = msg.text;
-          // winner goes to next round
-          newT.passRound(winner);
-        // bot.getChatAdministrators(chatId).then(function(data) {
-        // chatAdmin = data[0].user.username;
-        // console.log(chatAdmin);
-        // var something = /regular/
-        }
-      })     
+      bot.sendMessage(chatId, `Who won the match? Choose the winner by clicking the button below.`, opts);    
     }
   } else {
       bot.sendMessage(chatId, `Only ${chatAdmin} can send me commands!`);  
   }
 });
-    //bot.onText(/${nextM.player1}/, function (msg, match))
-  
 
-
-// bot.onText('message', function (msg, match) {
-//   let chatId = msg.chat.id;
-//   photo can be: a file path, a stream or a Telegram file_id
-//   let photo = './cats.jpg';
-//   bot.sendPhoto(chatId, photo, {caption: 'Lovely kittens'});
-//   let opts = {
-//     reply_markup: JSON.stringify({ 
-//     keyboard: [['OK','Cancel']],
-//     one_time_keyboard: true,
-//     resize_keyboard: true
-//     })
-//   };
-//   bot.sendMessage(chatId, 'What do you want to do?', opts);
-// });
-
-// I have to implement deletetournament
 bot.onText(/\/deletetournament/, function (msg, match) {
   let chatId = msg.chat.id;
   let opts = {
@@ -204,85 +195,3 @@ bot.onText(/\/deletetournament/, function (msg, match) {
     bot.sendMessage(chatId, `Only ${chatAdmin} can send me commands!`);
   }
 });
-
-  // bot.getChat(-176205989).then(function(data) {
-  //   console.log(data);
-  // }).catch(function() {
-  //   console.log('error');
-  // })
-  // bot.getChatAdministrators(-176205989).then(function(data) {
-  //   console.log(data);
-  // }).catch(function() {
-  //   console.log('error');
-  // })
-
-  // bot.getChatMembersCount(-176205989).then(function(data) {
-  //   console.log(data);
-  // }).catch(function() {
-  //   console.log('error');
-  // })
-  // bot.sendMessage(chatId, data);
-
-
-
-
-// bot.on('message', function (msg) {
-//   let chatId = msg.chat.id;
-//   if (msg.new_chat_participant) console.log(msg.new_chat_participant.first_name + ' ' + msg.new_chat_participant.last_name );
-//   if (msg.left_chat_participant) console.log(msg.left_chat_participant.username);
-
-//   // bot.sendMessage(chatId, 'What do you want to do?', opts);
-// });
-
-// { message_id: 145,
-//   from: 
-//    { id: 207286404,
-//      first_name: 'Manel',
-//      last_name: 'Pavon',
-//      username: 'Manel_Pavon' },
-//   chat: 
-//    { id: -176205989,
-//      title: 'Pruebas',
-//      type: 'group',
-//      all_members_are_administrators: true },
-//   date: 1478733428,
-//   new_chat_participant: 
-//    { id: 277229521,
-//      first_name: 'Javier',
-//      last_name: 'Cabrera',
-//      username: 'jcc2303' },
-//   new_chat_member: 
-//    { id: 277229521,
-//      first_name: 'Javier',
-//      last_name: 'Cabrera',
-//      username: 'jcc2303' } }
-
-// Matches /echo [whatever]
-// bot.onText(/\/echo (.+)/, function (msg, match) {
-//   let fromId = msg.from.id;
-//   let resp = match[1];
-//  let opts = {
-//     reply_markup: JSON.stringify({ 
-//     keyboard: [['putu','calvo']],
-//     one_time_keyboard: true,
-//     resize_keyboard: true
-//     })
-//   };
-//   bot.sendMessage(fromId, resp, opts);
-// });
-
-// //Any kind of message
-// bot.on('message', function (msg) {
-//   let chatId = msg.chat.id;
-//   // photo can be: a file path, a stream or a Telegram file_id
-//   // let photo = './cats.jpg';
-//   // bot.sendPhoto(chatId, photo, {caption: 'Lovely kittens'});
-//   let opts = {
-//     reply_markup: JSON.stringify({ 
-//     keyboard: [['putu','calvo']],
-//     one_time_keyboard: true,
-//     resize_keyboard: true
-//     })
-//   };
-//   bot.sendMessage(chatId, 'What do you want to do?', opts);
-// });
