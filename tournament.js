@@ -62,10 +62,10 @@ tm.createTournament = function (players) {
   return final;
 }
 
-Match.prototype.setSemis = function () {
-  this.childrenLeft.round = 'semifinal 1';
-  this.childrenRight.round = 'semifinal 2';  
-}
+// Match.prototype.setSemis = function () {
+//   this.childrenLeft.round = 'semifinal 1';
+//   this.childrenRight.round = 'semifinal 2';  
+// }
 
 Match.prototype.passRound = function (winner) {
   if (this.childrenLeft === undefined) return false;

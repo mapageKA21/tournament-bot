@@ -14,10 +14,10 @@ let myState = {
   playing: false
 }
 
-let chatAdmin;
-let chatId;
+let chatAdmin = "johnandblue";
+let players = ['1','2','3','4']
 let newT;
-let players;
+let chatId = -155151883;
 let playingPlayers = [];
 let theFinalPlayers = [];
 
@@ -36,6 +36,8 @@ bot.on('message', function (msg) {
       setTimeout (function () { 
         bot.sendMessage(chatId, `Tournament ended. Congratulations to ${msg.text}!`);
       }, 600); 
+      let photo = './winner.gif';
+      bot.sendDocument(chatId, photo, {caption: "Who's next?"});
       theFinalPlayers = [];
     }
 
