@@ -44,7 +44,7 @@ bot.on('message', function (msg) {
       // winner goes to next round
       newT.passRound(winner);
       let nextMatch = newT.nextMatch();
-      if (nextMatch.value === 'final') {
+      if (nextMatch.round === 'final') {
         theFinalPlayers = [nextMatch.player1, nextMatch.player2];
         bot.sendMessage(chatId, `FINAL MATCH: ${nextMatch.player1} VS ${nextMatch.player2}`);
         let opts = {
@@ -89,9 +89,11 @@ bot.onText(/\/start/, function (msg, match) {
 Before we start the tournament, every player has to register.
 
 Please type /register to register at the tournament.
-Every player has to send /register.  
+Every player has to send /register.
 
 When ready, the administrator has to type /go to start the tournament.
+
+Players can send /next to know the next opponent.
     
     `;
     if (msg.from.username === chatAdmin) {
@@ -117,7 +119,8 @@ bot.onText(/\/help/, function (msg, match) {
     
 Then type /start to start a tournament!
 Every player has to register before the tournament starts.
-Once the tournament has started, only the group administrator can send me commands.
+Once the tournament has started, only the group administrator can send me commands, except /next.
+Players can type /next to know the next opponent.
 
 You can control me by sending these commands:
 
@@ -126,6 +129,7 @@ You can control me by sending these commands:
   /go - start the tournament
   /help - list of commands and help
   /deletetournament - delete an existing tournament
+  /next - show next opponent
     
     `;
     if (msg.from.username === chatAdmin) {
@@ -153,6 +157,22 @@ bot.onText(/\/register/, function (msg, match) {
   }
 });
 
+bot.onText(/\/next/, function (msg, match) {
+  let chatId = msg.chat.id;
+  let user = msg.from.username;
+  if (myState.playing === true) {
+    if (players.includes(user) || playingPlayers.includes(user) || theFinalPlayers.includes(user)) {
+      let opponent = newT.nextOpponent(user);
+      let resp = `
+        ${user} your opponent is ${opponent} 
+      `;
+    bot.sendMessage(chatId, resp);
+    } else { bot.sendMessage(chatId, `You are not playing the current tournament`)}
+  } else {
+    bot.sendMessage(chatId, `Not playing any tournament yet.`);
+  }
+});
+
 bot.onText(/\/go/, function (msg, match) {
   let chatId = msg.chat.id;
   if (msg.from.username === chatAdmin) {
@@ -169,7 +189,6 @@ bot.onText(/\/go/, function (msg, match) {
       bot.sendMessage(chatId, `New tournament created with ${number} players! Start!`);
 
       // shows next match and ask for the winner
-      // console.log(newT);
       let nextM = newT.nextMatch();
       playingPlayers = [nextM.player1, nextM.player2];
       bot.sendMessage(chatId, `Next Match: ${nextM.player1} VS ${nextM.player2}`);

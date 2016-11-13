@@ -3,7 +3,7 @@
 const tm = {};
 
 var Match = tm.Match = function () {
- this.value = undefined;
+ this.round = undefined;
  this.player1 = undefined;
  this.player2 = undefined;
  this.score = undefined;
@@ -12,46 +12,9 @@ var Match = tm.Match = function () {
  this.childrenRight = undefined;
 }
 
-Match.prototype.passRound = function (winner) {
-  if (this.childrenLeft === undefined) return false;
-  if (this.childrenLeft.player1 === winner) {
-    this.player1 = winner;
-    this.childrenLeft.played = true;
-    return true;
-  } else if (this.childrenLeft.player2 === winner ) {
-    this.player1 = winner;
-    this.childrenLeft.played = true;  
-    return true;
-  }
-  if (this.childrenRight !== undefined) {
-    if (this.childrenRight.player1 === winner) {
-      this.player2 = winner;
-      this.childrenLeft.played = true;
-      return true;
-    } else if (this.childrenRight.player2 === winner) {
-      this.player2 = winner;
-      this.childrenLeft.played = true;
-      return true;
-    }
-  }
-  
-  let found = this.childrenLeft.passRound(winner);
-  if (!found && this.childrenRight) 
-    found = this.childrenRight.passRound(winner);
-
-  return found;
-}
-
-Match.prototype.nextMatch = function () {
-  //aprofitar per anomenar els partits en funcio de profunditat(semis, quarts, etc)
-  if (this.player1 && this.player2) return this;
-  if (!this.player2 && this.childrenRight !== undefined) return this.childrenRight.nextMatch();
-  if (!this.player1 && this.childrenLeft !== undefined) return this.childrenLeft.nextMatch();
-}
-
 tm.createTournament = function (players) {
   let final = new Match();
-  final.value = 'final';
+  final.round = 'final';
   let queue = [final];
   let empty = players.length - 2;
   let counter = 2;
@@ -99,5 +62,57 @@ tm.createTournament = function (players) {
   return final;
 }
 
+Match.prototype.setSemis = function () {
+  this.childrenLeft.round = 'semifinal 1';
+  this.childrenRight.round = 'semifinal 2';  
+}
+
+Match.prototype.passRound = function (winner) {
+  if (this.childrenLeft === undefined) return false;
+  if (this.childrenLeft.player1 === winner) {
+    this.player1 = winner;
+    this.childrenLeft.played = true;
+    return true;
+  } else if (this.childrenLeft.player2 === winner ) {
+    this.player1 = winner;
+    this.childrenLeft.played = true;  
+    return true;
+  }
+  if (this.childrenRight !== undefined) {
+    if (this.childrenRight.player1 === winner) {
+      this.player2 = winner;
+      this.childrenLeft.played = true;
+      return true;
+    } else if (this.childrenRight.player2 === winner) {
+      this.player2 = winner;
+      this.childrenLeft.played = true;
+      return true;
+    }
+  }
+  
+  let found = this.childrenLeft.passRound(winner);
+  if (!found && this.childrenRight) 
+    found = this.childrenRight.passRound(winner);
+
+  return found;
+}
+
+Match.prototype.nextMatch = function () {
+  if (this.player1 && this.player2) return this;
+  if (!this.player2 && this.childrenRight !== undefined) return this.childrenRight.nextMatch();
+  if (!this.player1 && this.childrenLeft !== undefined) return this.childrenLeft.nextMatch();
+}
+
+Match.prototype.nextOpponent = function (player) {
+    if (this.player1 === player) return this.player2;
+    if (this.player2 === player) return this.player1;
+    var match;
+    if (!this.player2 && !this.player1 && this.childrenRight) 
+        match = this.childrenRight.nextOpponent(player);
+    // maybe previous return value was undefined, then try the other side:
+    if (!match && !this.player1 && !this.player2 && this.childrenLeft) 
+        match = this.childrenLeft.nextOpponent(player);
+    return match;
+}
 
 module.exports = tm;
