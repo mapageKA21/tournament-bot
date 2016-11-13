@@ -98,9 +98,19 @@ Match.prototype.passRound = function (winner) {
 }
 
 Match.prototype.nextMatch = function () {
-  if (this.player1 && this.player2) return this;
-  if (!this.player2 && this.childrenRight !== undefined) return this.childrenRight.nextMatch();
-  if (!this.player1 && this.childrenLeft !== undefined) return this.childrenLeft.nextMatch();
+    let next, nextDepth = -1;
+
+    (function recurse (match, depth = 0) {
+        if (match.player1 && match.player2 && depth > nextDepth) {
+            next = match;
+            nextDepth = depth;
+        }
+        if (!match.player1 && match.childrenLeft)
+            recurse(match.childrenLeft, depth + 1);
+        if (!match.player2 && match.childrenRight) 
+            recurse(match.childrenRight, depth + 1);
+    })(this);
+    return next;
 }
 
 Match.prototype.nextOpponent = function (player) {
