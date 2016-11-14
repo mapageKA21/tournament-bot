@@ -21,6 +21,20 @@ let chatId = -155151883;
 let playingPlayers = [];
 let theFinalPlayers = [];
 
+// bot.on('inline_query', function(msg){
+//   console.log(msg);
+//   console.log(msg.id);
+//   // queryId = msg.id;
+//   bot.answerInlineQuery(msg.id, [{
+//           inline_query: JSON.stringify({ 
+//             type: 'gif',
+//             id: 1,
+//             gif_url: './winner.gif',
+//             thumb_url: './winner.gif'
+//           })
+//         }]);
+// });
+
 bot.on('message', function (msg) {
   if (msg.group_chat_created) {
     chatId = msg.chat.id;
@@ -36,6 +50,8 @@ bot.on('message', function (msg) {
       setTimeout (function () { 
         bot.sendMessage(chatId, `Tournament ended. Congratulations to ${msg.text}!`);
       }, 600); 
+      let video = './messilegend.mp4';
+      bot.sendVideo(chatId, video);      
       let photo = './winner.gif';
       bot.sendDocument(chatId, photo, {caption: "Who's next?"});
       theFinalPlayers = [];
@@ -151,6 +167,7 @@ bot.onText(/\/register/, function (msg, match) {
       players.push(user);
       let resp = `
         ${user} has been registered! 
+Current players registered: ${players.length}
       `;
     bot.sendMessage(chatId, resp);
     } else { bot.sendMessage(chatId, `You can't register more than once!`)}

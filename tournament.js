@@ -12,6 +12,20 @@ var Match = tm.Match = function () {
  this.childrenRight = undefined;
 }
 
+Match.prototype.addPlayers = function (where, players) {
+  if (where === 'right') {
+    this.childrenRight = new Match();
+    this.childrenRight.player1 = players.shift();
+    this.childrenRight.player2 = players.shift();
+  } 
+  if (where === 'left') {
+    this.childrenLeft = new Match();
+    this.childrenLeft.player1 = players.shift();
+    this.childrenLeft.player2 = players.shift();
+  } 
+  else return false;
+}
+
 tm.createTournament = function (players) {
   let final = new Match();
   final.round = 'final';
@@ -19,6 +33,7 @@ tm.createTournament = function (players) {
   let empty = players.length - 2;
   let counter = 2;
   let match;
+
   while (queue.length > 0 && counter < empty) {
     match = queue.shift();
     counter += 2;
@@ -30,9 +45,7 @@ tm.createTournament = function (players) {
       counter += 2;
     }
     if ((players.length) % 2 === 0 && counter === empty && match.childrenRight === undefined) {
-      match.childrenRight = new Match();
-      match.childrenRight.player1 = players.shift();
-      match.childrenRight.player2 = players.shift();
+      match.addPlayers('right', players);
       counter += 2;
     }
   }
@@ -42,51 +55,46 @@ tm.createTournament = function (players) {
       queue[queue.length-1].player2 = players.shift()
     }
     if (match.childrenRight === undefined) {
-      match.childrenRight = new Match ();
-      match.childrenRight.player1 = players.shift();
-      match.childrenRight.player2 = players.shift();
+      match.addPlayers('right', players);
     }
   }
 
   while (queue.length > 0 && players.length > 0) {
     let match = queue.shift();
-    match.childrenLeft = new Match ();
-    match.childrenLeft.player1 = players.shift();
-    match.childrenLeft.player2 = players.shift();
+    match.addPlayers('left', players);
     if (players.length > 0) {
-      match.childrenRight = new Match ();
-      match.childrenRight.player1 = players.shift();
-      match.childrenRight.player2 = players.shift();
+      match.addPlayers('right', players);
     }
   }
   return final;
 }
 
-// Match.prototype.setSemis = function () {
-//   this.childrenLeft.round = 'semifinal 1';
-//   this.childrenRight.round = 'semifinal 2';  
-// }
+Match.prototype.setWinner = function (num, winner) {
+  if (num === 1) {
+    this.player1 = winner;
+    this.childrenLeft.played = true;
+    return true;
+  }
+  if (num === 2) {
+    this.player2 = winner;
+    this.childrenLeft.played = true;
+    return true;
+  }
+  else return false;
+}
 
 Match.prototype.passRound = function (winner) {
   if (this.childrenLeft === undefined) return false;
   if (this.childrenLeft.player1 === winner) {
-    this.player1 = winner;
-    this.childrenLeft.played = true;
-    return true;
+    this.setWinner(1, winner);
   } else if (this.childrenLeft.player2 === winner ) {
-    this.player1 = winner;
-    this.childrenLeft.played = true;  
-    return true;
+    this.setWinner(1, winner);
   }
   if (this.childrenRight !== undefined) {
     if (this.childrenRight.player1 === winner) {
-      this.player2 = winner;
-      this.childrenLeft.played = true;
-      return true;
+      this.setWinner(2, winner);
     } else if (this.childrenRight.player2 === winner) {
-      this.player2 = winner;
-      this.childrenLeft.played = true;
-      return true;
+      this.setWinner(2, winner);
     }
   }
   
