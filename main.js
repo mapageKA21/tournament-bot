@@ -61,10 +61,10 @@ bot.on('message', function (msg) {
           setTimeout (function () { 
             bot.sendMessage(chatId, `Tournament ended. Congratulations to ${msg.text}!`);
           }, 600); 
-          let video = './messilegend.mp4';
+          let video = '../champion/messilegend.mp4';
           bot.sendVideo(chatId, video);      
-          let photo = './winner.gif';
-          bot.sendDocument(chatId, photo, {caption: "Who's next?"});
+          let photo = '../champion/winner.gif';
+          bot.sendDocument(chatId, photo, {caption: "Who's the king?"});
           chatsOpen[i].theFinalPlayers = [];
         }
 
@@ -110,10 +110,13 @@ bot.on('message', function (msg) {
     }
   }
 });
-
+// photo can be a file path, a stream or a telegram file_id
+// Use one of .jpg, .jpeg, .gif, .png, .tif or .bmp
 // Matches /start command
 bot.onText(/\/start/, function (msg, match) {
+  // let image = './svg.svg';
   let chatId = msg.chat.id;
+  // bot.sendPhoto(chatId, image);
   let respNew = `
     *Welcome!*
 
@@ -261,7 +264,6 @@ bot.onText(/\/go/, function (msg, match) {
     }
   }
 });
-
 
 bot.onText(/\/deletetournament/, function (msg, match) {
   let chatId = msg.chat.id;
