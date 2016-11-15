@@ -155,7 +155,6 @@ You can control me by sending these commands:
     } else {
       bot.sendMessage(chatId, `Only ${chatAdmin} can send me commands!`);
     }
-
 });
 
 // I have to implement newtournament
