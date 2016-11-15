@@ -2,12 +2,19 @@
 //name: Big-T
 //username: DChamp_Bot
 
+const nconf = require('nconf');
+
 const TelegramBot = require('node-telegram-bot-api');
-const token = require('./token.js');
 const tournament = require('./tournament.js');
+
+nconf.argv().env()
+  .file({ file: './.env.json' });
+
+const token = nconf.get('TELEGRAM_TOKEN');
 
 // Setup polling way
 const bot = new TelegramBot(token, {polling: true});
+
 
 let NewT = function (chatId, chatAdmin) {
   this.chatId = chatId;
