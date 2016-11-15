@@ -162,15 +162,15 @@ You can control me by sending these commands:
     
     `;
 
-    for (let i = 0; i < chatsOpen.length; i++) {
-      if (chatsOpen[i].chatId === chatId) {
-        if (msg.from.username === chatsOpen[i].chatAdmin) {
-            bot.sendMessage(chatId, resp, {parse_mode: 'Markdown'});
-          } else {
-              bot.sendMessage(chatId, `Only ${chatsOpen[i].chatAdmin} can send me commands!`);
-            }
-      }
+  for (let i = 0; i < chatsOpen.length; i++) {
+    if (chatsOpen[i].chatId === chatId) {
+      if (msg.from.username === chatsOpen[i].chatAdmin) {
+          bot.sendMessage(chatId, resp, {parse_mode: 'Markdown'});
+        } else {
+            bot.sendMessage(chatId, `Only ${chatsOpen[i].chatAdmin} can send me commands!`);
+          }
     }
+  }
 });
 
 bot.onText(/\/register/, function (msg, match) {
