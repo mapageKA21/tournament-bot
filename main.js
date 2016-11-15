@@ -15,7 +15,6 @@ const token = nconf.get('TELEGRAM_TOKEN');
 // Setup polling way
 const bot = new TelegramBot(token, {polling: true});
 
-
 let NewT = function (chatId, chatAdmin) {
   this.chatId = chatId;
   this.chatAdmin = chatAdmin;
@@ -30,6 +29,16 @@ let NewT = function (chatId, chatAdmin) {
 }
 
 let chatsOpen = [];
+
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+// photo can be a file path, a stream or a telegram file_id
+// Use one of .jpg, .jpeg, .gif, .png, .tif or .bmp
+  // let image = `./pics/${getRandomInt(1,16)}.jpg`;
+  // bot.sendPhoto(chatId, image);
+
 
 bot.on('message', function (msg) {
   let chatId = msg.chat.id;
@@ -61,15 +70,18 @@ bot.on('message', function (msg) {
           setTimeout (function () { 
             bot.sendMessage(chatId, `Tournament ended. Congratulations to ${msg.text}!`);
           }, 600); 
-          let video = '../champion/messilegend.mp4';
+          let video = './champion/messilegend.mp4';
           bot.sendVideo(chatId, video);      
-          let photo = '../champion/winner.gif';
-          bot.sendDocument(chatId, photo, {caption: "Who's the king?"});
+          let gif = './champion/winner.gif';
+          bot.sendDocument(chatId, gif, {caption: "Who's the king?"});
           chatsOpen[i].theFinalPlayers = [];
         }
 
       if (chatsOpen[i].playingPlayers.includes(msg.text)) {
         let winner = msg.text;
+        let gif = `./gifs/${getRandomInt(1,11)}.gif`;
+        bot.sendMessage(chatId, `${msg.text} wins!`);
+        bot.sendDocument(chatId, gif, {caption: "Who's next?"});
         // winner goes to next round
         chatsOpen[i].newT.passRound(winner);
         let nextMatch = chatsOpen[i].newT.nextMatch();
@@ -110,13 +122,11 @@ bot.on('message', function (msg) {
     }
   }
 });
-// photo can be a file path, a stream or a telegram file_id
-// Use one of .jpg, .jpeg, .gif, .png, .tif or .bmp
+
 // Matches /start command
 bot.onText(/\/start/, function (msg, match) {
-  // let image = './svg.svg';
+  Math.random() 
   let chatId = msg.chat.id;
-  // bot.sendPhoto(chatId, image);
   let respNew = `
     *Welcome!*
 
@@ -128,6 +138,7 @@ Every player has to send /register.
 When ready, the administrator has to type /go to start the tournament.
 
 Players can send /next to know the next opponent.
+If not playing, you can have fun watching some random /pic
     
     `;
 
@@ -169,6 +180,7 @@ You can control me by sending these commands:
   /help - list of commands and help
   /deletetournament - delete an existing tournament
   /next - show next opponent
+  /pic - shor random pictures
     
     `;
 
@@ -305,3 +317,13 @@ bot.onText(/\/deletetournament/, function (msg, match) {
     }
   }
 });
+
+bot.onText(/\/pic/, function (msg, match) {
+  let chatId = msg.chat.id;
+  let user = msg.from.username;
+  let image = `./pics/${getRandomInt(1,16)}.jpg`;
+  bot.sendPhoto(chatId, image);
+});
+
+
+
