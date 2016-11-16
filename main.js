@@ -21,6 +21,7 @@ let NewT = function (chatId, chatAdmin) {
   this.players = [];
   this.playingPlayers = [];
   this.theFinalPlayers = [];
+  this.quickMatch = [];
   this.myState = {
     registring: false,
     playing: false
@@ -34,11 +35,26 @@ function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-// photo can be a file path, a stream or a telegram file_id
-// Use one of .jpg, .jpeg, .gif, .png, .tif or .bmp
-  // let image = `./pics/${getRandomInt(1,16)}.jpg`;
-  // bot.sendPhoto(chatId, image);
+bot.onText(/\/quick/, function (msg, match) {
+  let chatId = msg.chat.id;
+    let resp = `
+    *Quick match!* 
 
+Send me the players names using this format:
+
+Player1 - Player2
+
+    `;
+  for (let i = 0; i < chatsOpen.length; i++) {
+    if (chatsOpen[i].chatId === chatId) {
+      if (msg.from.username === chatsOpen[i].chatAdmin) {
+          bot.sendMessage(chatId, resp, {parse_mode: 'Markdown'});
+        } else {
+            bot.sendMessage(chatId, `Only ${chatsOpen[i].chatAdmin} can send me commands!`);
+          }
+    }
+  }
+});
 
 bot.on('message', function (msg) {
   let chatId = msg.chat.id;
@@ -63,9 +79,10 @@ bot.on('message', function (msg) {
     }
   }
 
+         
   for (var i = 0; i < chatsOpen.length; i++) {
     if (chatsOpen[i].chatId === chatId) {
-      if (msg.from.username === chatsOpen[i].chatAdmin) { 
+      if (msg.from.username === chatsOpen[i].chatAdmin) {
         if (chatsOpen[i].theFinalPlayers.includes(msg.text)) {
           setTimeout (function () { 
             bot.sendMessage(chatId, `Tournament ended. Congratulations to ${msg.text}!`);
@@ -77,47 +94,75 @@ bot.on('message', function (msg) {
           chatsOpen[i].theFinalPlayers = [];
         }
 
-      if (chatsOpen[i].playingPlayers.includes(msg.text)) {
-        let winner = msg.text;
-        let gif = `./gifs/${getRandomInt(1,11)}.gif`;
-        bot.sendMessage(chatId, `${msg.text} wins!`);
-        bot.sendDocument(chatId, gif, {caption: "Who's next?"});
-        // winner goes to next round
-        chatsOpen[i].newT.passRound(winner);
-        let nextMatch = chatsOpen[i].newT.nextMatch();
-        if (nextMatch.round === 'final') {
-          chatsOpen[i].theFinalPlayers = [nextMatch.player1, nextMatch.player2];
-          bot.sendMessage(chatId, `FINAL MATCH: ${nextMatch.player1} VS ${nextMatch.player2}`);
-          let opts = {
-            reply_markup: JSON.stringify({ 
-              keyboard: [chatsOpen[i].theFinalPlayers],
-              one_time_keyboard: true,
-              resize_keyboard: true
-            })
-          };
-          setTimeout (function () { 
-            bot.sendMessage(chatId, `Who is the CHAMPION? Choose the winner by clicking the button below.`, opts);
-          }, 600);
-          chatsOpen[i].myState.registring = false;
-          chatsOpen[i].myState.playing = false;
-          chatsOpen[i].newT = undefined;
-          chatsOpen[i].players = [];
-          chatsOpen[i].playingPlayers = [];
-        } else {
-            chatsOpen[i].playingPlayers = [nextMatch.player1, nextMatch.player2];
-            bot.sendMessage(chatId, `Next Match: ${nextMatch.player1} VS ${nextMatch.player2}`);
+        if (chatsOpen[i].playingPlayers.includes(msg.text)) {
+          let winner = msg.text;
+          let gif = `./gifs/${getRandomInt(1,11)}.gif`;
+          bot.sendMessage(chatId, `${msg.text} wins!`);
+          bot.sendDocument(chatId, gif, {caption: "Who's next?"});
+          // winner goes to next round
+          chatsOpen[i].newT.passRound(winner);
+          let nextMatch = chatsOpen[i].newT.nextMatch();
+          if (nextMatch.round === 'final') {
+            chatsOpen[i].theFinalPlayers = [nextMatch.player1, nextMatch.player2];
+            bot.sendMessage(chatId, `FINAL MATCH: ${nextMatch.player1} VS ${nextMatch.player2}`);
             let opts = {
               reply_markup: JSON.stringify({ 
-                keyboard: [chatsOpen[i].playingPlayers],
+                keyboard: [chatsOpen[i].theFinalPlayers],
                 one_time_keyboard: true,
                 resize_keyboard: true
               })
             };
             setTimeout (function () { 
-              bot.sendMessage(chatId, `Who won the match? Choose the winner by clicking the button below.`, opts);    
+              bot.sendMessage(chatId, `Who is the CHAMPION? Choose the winner by clicking the button below.`, opts);
             }, 600);
-          }
+            chatsOpen[i].myState.registring = false;
+            chatsOpen[i].myState.playing = false;
+            chatsOpen[i].newT = undefined;
+            chatsOpen[i].players = [];
+            chatsOpen[i].playingPlayers = [];
+          } else {
+              chatsOpen[i].playingPlayers = [nextMatch.player1, nextMatch.player2];
+              bot.sendMessage(chatId, `Next Match: ${nextMatch.player1} VS ${nextMatch.player2}`);
+              let opts = {
+                reply_markup: JSON.stringify({ 
+                  keyboard: [chatsOpen[i].playingPlayers],
+                  one_time_keyboard: true,
+                  resize_keyboard: true
+                })
+              };
+              setTimeout (function () { 
+                bot.sendMessage(chatId, `Who won the match? Choose the winner by clicking the button below.`, opts);    
+              }, 600);
+            }
         }
+
+        if ((msg.text).includes("-")) {
+          let re = /(.+)-(.+)/;
+          chatsOpen[i].quickMatch = msg.text.split(re);
+          chatsOpen[i].quickMatch.splice(0,1);
+          chatsOpen[i].quickMatch.splice(2,1);
+          bot.sendMessage(chatId, `Match ready!`);
+          let opts = {
+                reply_markup: JSON.stringify({ 
+                  keyboard: [chatsOpen[i].quickMatch],
+                  one_time_keyboard: true,
+                  resize_keyboard: true
+                })
+              };
+          setTimeout (function () { 
+                bot.sendMessage(chatId, `Who won the match? Choose the winner by clicking the button below.`, opts);    
+              }, 2000);
+        }
+
+        if (chatsOpen[i].quickMatch.includes(msg.text)) {
+          setTimeout (function () { 
+            bot.sendMessage(chatId, `${msg.text} rocks!`);
+          }, 600);       
+          let gif = `./gifs/${getRandomInt(1,11)}.gif`;
+          bot.sendDocument(chatId, gif, {caption: "Too easy..."});
+          chatsOpen[i].quickMatch = [];
+        }
+
       } 
     }
   }
@@ -125,7 +170,6 @@ bot.on('message', function (msg) {
 
 // Matches /start command
 bot.onText(/\/start/, function (msg, match) {
-  Math.random() 
   let chatId = msg.chat.id;
   let respNew = `
     *Welcome!*
@@ -139,6 +183,8 @@ When ready, the administrator has to type /go to start the tournament.
 
 Players can send /next to know the next opponent.
 If not playing, you can have fun watching some random /pic
+
+You can also play a single match 1 VS 1 by sending /quick  
     
     `;
 
@@ -180,7 +226,8 @@ You can control me by sending these commands:
   /help - list of commands and help
   /deletetournament - delete an existing tournament
   /next - show next opponent
-  /pic - shor random pictures
+  /pic - show random pictures
+  /quick - play a single match 
     
     `;
 
