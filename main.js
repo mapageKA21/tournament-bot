@@ -48,10 +48,14 @@ Player1 - Player2
   for (let i = 0; i < chatsOpen.length; i++) {
     if (chatsOpen[i].chatId === chatId) {
       if (msg.from.username === chatsOpen[i].chatAdmin) {
+        if (chatsOpen[i].myState.registring === false && chatsOpen[i].myState.playing === false) {
           bot.sendMessage(chatId, resp, {parse_mode: 'Markdown'});
         } else {
-            bot.sendMessage(chatId, `Only ${chatsOpen[i].chatAdmin} can send me commands!`);
-          }
+            bot.sendMessage(chatId, `Can't play a quick match while playing or registering into a tournament. You have to finish it or delete it.`);
+        }
+      } else {
+          bot.sendMessage(chatId, `Only ${chatsOpen[i].chatAdmin} can send me commands!`);
+        }
     }
   }
 });
@@ -79,7 +83,6 @@ bot.on('message', function (msg) {
     }
   }
 
-         
   for (var i = 0; i < chatsOpen.length; i++) {
     if (chatsOpen[i].chatId === chatId) {
       if (msg.from.username === chatsOpen[i].chatAdmin) {
@@ -157,7 +160,7 @@ bot.on('message', function (msg) {
         if (chatsOpen[i].quickMatch.includes(msg.text)) {
           setTimeout (function () { 
             bot.sendMessage(chatId, `${msg.text} rocks!`);
-          }, 600);       
+          }, 600);
           let gif = `./gifs/${getRandomInt(1,11)}.gif`;
           bot.sendDocument(chatId, gif, {caption: "Too easy..."});
           chatsOpen[i].quickMatch = [];
